@@ -102,17 +102,6 @@ oo_core_fetch(OOCore *core)
                 /* Keep track of physical address of this instruction for later use */
                 e->ins.phy_pc = s->code_guest_paddr;
 
-                /* If true, it indicates that some sort of memory access request
-                 * are sent to memory controller for this instruction, so
-                 * request the fast wrap-around read for this address */
-                if (simcpu->mmu->mem_controller->frontend_mem_access_queue
-                        .cur_size)
-                {
-                    mem_controller_req_fast_read_for_addr(
-                        &simcpu->mmu->mem_controller->frontend_mem_access_queue,
-                        e->ins.phy_pc);
-                }
-
                 if (s->sim_params->enable_l1_caches)
                 {
                     /* L1 caches and TLB are probed in parallel */
@@ -157,17 +146,6 @@ oo_core_fetch(OOCore *core)
             if (!simcpu->mmu->mem_controller->frontend_mem_access_queue
                      .cur_size)
             {
-                /* Memory controller read logic will install the tag in the cache line with
-                 * the first word read, while the remaining words are still
-                 * being fetched. This may cause a false hit on the following
-                 * words. Check the memory controller to see if the word is
-                 * received. Only then, proceed further. */
-                if (!e->ins.exception
-                    && mem_controller_wrap_around_read_pending(
-                           simcpu->mmu->mem_controller, e->ins.phy_pc))
-                {
-                    return;
-                }
 
                 /* If the next stage is available, send this instruction to next
                    stage, else stall fetch */
@@ -275,7 +253,7 @@ oo_core_decode(OOCore *core)
                                 {
                                     mem_controller_flush_stage_queue_entry_from_dram_queue(
                                         &core->simcpu->mmu->mem_controller
-                                             ->dram_dispatch_queue,
+                                             ->cache_line_miss_queue,
                                         &core->simcpu->mmu->mem_controller
                                              ->frontend_mem_access_queue);
                                 }

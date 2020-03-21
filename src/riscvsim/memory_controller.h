@@ -36,39 +36,29 @@
 #include "circular_queue.h"
 #include "dram.h"
 #include "memory_controller_utils.h"
-#include "riscv_sim_typedefs.h"
+#include "riscv_sim_macros.h"
 
 #define FRONTEND_MEM_ACCESS_QUEUE_SIZE 64
 #define BACKEND_MEM_ACCESS_QUEUE_SIZE 64
-#define DRAM_DISPATCH_QUEUE_SIZE 64
+#define cache_line_miss_queue_SIZE 64
 
-typedef struct DRAMDispatchQueue
+typedef struct CacheLineMissQueue
 {
     CQ cq;
-    PendingMemAccessEntry entry[DRAM_DISPATCH_QUEUE_SIZE];
-} DRAMDispatchQueue;
+    PendingMemAccessEntry entry[cache_line_miss_queue_SIZE];
+} CacheLineMissQueue;
 
 typedef struct MemoryController
 {
     int mem_model_type;
     int current_latency;
+    int max_latency;
     int mem_access_active;
-
-    /* For wrap-around read */
-    int wrap_around_mode;
-    int cur_bit_vec_id;
-    int last_bit_vec_id;
-    int num_bit_vec_read;
-    int wpr_bit_vec_start_id;
-    int *latency_array;
-    int *latency_status_bv;
-    int max_bus_blks;
-
     uint32_t dram_burst_size;
     void (*mem_controller_update_internal)(struct MemoryController *);
     StageMemAccessQueue frontend_mem_access_queue;
     StageMemAccessQueue backend_mem_access_queue;
-    DRAMDispatchQueue dram_dispatch_queue;
+    CacheLineMissQueue cache_line_miss_queue;
     Dram *dram;
 } MemoryController;
 
@@ -85,9 +75,6 @@ int mem_controller_access_dram(MemoryController *m, target_ulong paddr,
                                int bytes_to_access, MemAccessType op_type,
                                void *p_mem_access_info);
 void mem_controller_flush_dram_queue(MemoryController *m);
-void mem_controller_req_fast_read_for_addr(StageMemAccessQueue *q, target_ulong addr);
-void mem_controller_create_wrap_around_bit_vec(MemoryController *m);
-int mem_controller_wrap_around_read_pending(MemoryController *m, target_ulong addr);
 void mem_controller_flush_stage_queue_entry_from_dram_queue(
-    DRAMDispatchQueue *dram_queue, StageMemAccessQueue *stage_queue);
+    CacheLineMissQueue *dram_queue, StageMemAccessQueue *stage_queue);
 #endif
