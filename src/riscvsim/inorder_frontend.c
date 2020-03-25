@@ -365,7 +365,7 @@ in_core_decode(INCore *core)
                                 {
                                     mem_controller_flush_stage_queue_entry_from_dram_queue(
                                         &core->simcpu->mmu->mem_controller
-                                             ->dram_dispatch_queue,
+                                             ->cache_line_miss_queue,
                                         &core->simcpu->mmu->mem_controller
                                              ->frontend_mem_access_queue);
                                 }
