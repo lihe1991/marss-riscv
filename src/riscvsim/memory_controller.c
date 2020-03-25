@@ -45,6 +45,7 @@ mem_controller_init(const SimParams *p)
     assert(m);
     m->dram_burst_size = p->dram_burst_size;
     m->mem_model_type = p->mem_model_type;
+    m->cache_line_fetch_latency = p->cache_line_fetch_latency;
 
     m->frontend_mem_access_queue.max_size = FRONTEND_MEM_ACCESS_QUEUE_SIZE;
     m->frontend_mem_access_queue.entry = (PendingMemAccessEntry *)calloc(
@@ -280,31 +281,13 @@ void
 mem_controller_update_base(MemoryController *m)
 {
     PendingMemAccessEntry *e;
-    int bytes_accessed;
 
     if (!m->mem_access_active)
     {
         if (!cq_empty(&m->cache_line_miss_queue.cq))
         {
             e = &m->cache_line_miss_queue.entry[cq_front(&m->cache_line_miss_queue.cq)];
-
-            /* Don't stall the pipeline stage for write request once submitted
-             * to DRAM */
-            if (e->type == Write)
-            {
-                write_complete(m, e->addr);
-            }
-
-            // bytes_accessed = 0;
-            // while (bytes_accessed < e->bytes_to_access)
-            // {
-            //     m->max_latency += dram_get_latency(
-            //         m->dram, e->addr + bytes_accessed, e->type);
-            //     bytes_accessed += m->dram->mem_bus_width_bytes;
-            // }
-
-            m->max_latency = 1;
-
+            m->max_latency = m->cache_line_fetch_latency;
             m->mem_access_active = 1;
             m->current_latency = 1;
         }
@@ -318,10 +301,17 @@ mem_controller_update_base(MemoryController *m)
             m->mem_access_active = 0;
             m->max_latency = 0;
             m->current_latency = 0;
+
             if (e->type == Read)
             {
                 read_complete(m, e->addr);
             }
+
+            if (e->type == Write)
+            {
+                write_complete(m, e->addr);
+            }
+
 
             /* Remove the entry */
             e->valid = 0;

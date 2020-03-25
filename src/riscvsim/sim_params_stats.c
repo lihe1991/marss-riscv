@@ -164,6 +164,7 @@ sim_params_init()
     p->tRCD = DEF_tRCD;
     p->tRP = DEF_tRP;
     p->row_buffer_write_latency = DEF_ROW_BUFFER_WRITE_LATENCY;
+    p->cache_line_fetch_latency = DEF_CACHE_LINE_FETCH_LATENCY;
 
     p->prf_int_size = DEF_PRF_INT_SIZE;
     p->prf_fp_size = DEF_PRF_FP_SIZE;
@@ -406,6 +407,8 @@ sim_params_print(const SimParams *p)
             fprintf(stderr, " \x1B[32m*\x1B[0m %-30s : %u\n", "tRP", p->tRP);
             fprintf(stderr, " \x1B[32m*\x1B[0m %-30s : %u\n",
                     "row_buffer_write_latency", p->row_buffer_write_latency);
+            fprintf(stderr, " \x1B[32m*\x1B[0m %-30s : %u\n",
+                    "cache_line_fetch_latency", p->cache_line_fetch_latency);
             break;
         }
         case MEM_MODEL_DRAMSIM:
@@ -663,6 +666,8 @@ sim_params_validate(const SimParams *p)
     validate_param("tRP", 0, 1, 2048, p->tRP);
     validate_param("row_buffer_write_latency", 0, 1, 2048,
                    p->row_buffer_write_latency);
+    validate_param("cache_line_fetch_latency", 0, 1, 2048,
+                   p->cache_line_fetch_latency);
 }
 
 void

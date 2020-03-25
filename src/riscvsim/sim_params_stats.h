@@ -161,6 +161,7 @@ enum MEM_MODEL_TYPE
 #define DEF_tRCD 4
 #define DEF_tRP 4
 #define DEF_ROW_BUFFER_WRITE_LATENCY 4
+#define DEF_CACHE_LINE_FETCH_LATENCY 10
 
 #define DEF_PRF_INT_SIZE 64
 #define DEF_PRF_FP_SIZE 64
@@ -314,6 +315,7 @@ typedef struct SimParams
     int tRCD;
     int tRP;
     int row_buffer_write_latency;
+    int cache_line_fetch_latency;
 
     /* DRAMSim2 params */
     int mem_model_type;

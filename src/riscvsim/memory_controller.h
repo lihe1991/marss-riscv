@@ -54,6 +54,7 @@ typedef struct MemoryController
     int current_latency;
     int max_latency;
     int mem_access_active;
+    int cache_line_fetch_latency;
     uint32_t dram_burst_size;
     void (*mem_controller_update_internal)(struct MemoryController *);
     StageMemAccessQueue frontend_mem_access_queue;

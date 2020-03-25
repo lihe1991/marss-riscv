@@ -891,6 +891,12 @@ static int virt_machine_parse_sim_config(VirtMachineParams *p,
                       p->sim_params->mem_bus_access_rtt_latency);
             }
 
+            tag_name = "cache_line_fetch_latency";
+            if (vm_get_int(cfg, tag_name, &p->sim_params->cache_line_fetch_latency) < 0) {
+              fprintf(stderr, "%s not found, selecting default value: %d\n", tag_name,
+                      p->sim_params->cache_line_fetch_latency);
+            }
+
             tag_name = "tCL";
             if (vm_get_int(cfg, tag_name, &p->sim_params->tCL) < 0) {
               fprintf(stderr, "%s not found, selecting default value: %d\n", tag_name,
